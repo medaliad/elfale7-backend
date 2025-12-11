@@ -6,6 +6,7 @@ services:
     plan: starter
     dockerfilePath: ./Dockerfile
     dockerCommand: npm run start:prod
+    buildCommand: npm ci --legacy-peer-deps && npm run build && npx prisma generate
     healthCheckPath: /api/docs
     envVars:
       - key: NODE_ENV

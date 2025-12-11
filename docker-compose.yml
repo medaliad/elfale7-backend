@@ -22,7 +22,7 @@ services:
     depends_on:
       - db
     command: >
-      sh -c "npx prisma migrate dev --name init && npm run start:dev"
+      sh -c "npm ci --legacy-peer-deps && npx prisma generate && npx prisma migrate dev --name init && npm run start:dev"
 
   db:
     image: postgres:16-alpine
