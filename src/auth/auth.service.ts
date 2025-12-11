@@ -21,9 +21,9 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, password: string) {
+  async validateUser(identifier: string, password: string, isPhone = false) {
     const user = await this.prisma.user.findUnique({
-      where: { email },
+      where: isPhone ? { phone: identifier } : { email: identifier },
     });
 
     if (!user) {
@@ -42,20 +42,35 @@ export class AuthService {
   }
 
   async login(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto.email, loginDto.password);
+    // Check if login is with email or phone
+    const isPhone = !loginDto.email && !!loginDto.phone;
+    const identifier = isPhone ? loginDto.phone! : loginDto.email!;
+    
+    const user = await this.validateUser(identifier, loginDto.password, isPhone);
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
     return tokens;
   }
 
   async register(registerDto: RegisterDto) {
-    // Check if user already exists
-    const userExists = await this.prisma.user.findUnique({
+    // Check if user already exists by email
+    const userExistsByEmail = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
     });
 
-    if (userExists) {
-      throw new BadRequestException('User already exists');
+    if (userExistsByEmail) {
+      throw new BadRequestException('User with this email already exists');
+    }
+
+    // Check if user already exists by phone (if provided)
+    if (registerDto.phone) {
+      const userExistsByPhone = await this.prisma.user.findUnique({
+        where: { phone: registerDto.phone },
+      });
+
+      if (userExistsByPhone) {
+        throw new BadRequestException('User with this phone number already exists');
+      }
     }
 
     // Hash password
@@ -65,6 +80,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         email: registerDto.email,
+        phone: registerDto.phone,
         password: hashedPassword,
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
