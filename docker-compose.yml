@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: farm-app
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/farm_db?schema=public
+      - JWT_ACCESS_SECRET=your_access_secret_key_here
+      - JWT_REFRESH_SECRET=your_refresh_secret_key_here
+      - JWT_ACCESS_EXPIRATION=15m
+      - JWT_REFRESH_EXPIRATION=7d
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - db
+    command: >
+      sh -c "npx prisma migrate dev --name init && npm run start:dev"
+
+  db:
+    image: postgres:16-alpine
+    container_name: farm-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=farm_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
