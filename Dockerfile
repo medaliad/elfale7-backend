@@ -33,8 +33,8 @@ RUN apk add --no-cache openssl
 COPY package*.json ./
 COPY tsconfig*.json ./
 
-# Install production dependencies and ts-node for seeding
-RUN npm install --only=production --legacy-peer-deps && npm install --no-save ts-node
+# Install production dependencies
+RUN npm install --only=production --legacy-peer-deps
 
 # Copy Prisma schema and migrations
 COPY prisma ./prisma/
@@ -51,4 +51,4 @@ ENV NODE_ENV=production
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Start app
-CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && npx prisma db seed && node dist/src/main.js
+CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && node dist/src/main.js
