@@ -48,8 +48,8 @@ export class AuthService {
     
     const user = await this.validateUser(identifier, loginDto.password, isPhone);
     const tokens = await this.getTokens(user.id, user.email);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    await this.updateRefreshToken(user.id, tokens.refreshToken ,);
+    return {tokens,user};
   }
 
   async register(registerDto: RegisterDto) {
