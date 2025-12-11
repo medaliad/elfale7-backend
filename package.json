@@ -5,7 +5,7 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "scripts": {
+    "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
@@ -18,13 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "docker:build": "docker build -t my-farm-app .",
-    "docker:run": "docker run -p 3000:3000 --env-file .env my-farm-app",
-    "docker:up": "docker-compose up",
-    "docker:down": "docker-compose down",
-    "docker:dev": "docker-compose up -d",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy"
+    "prisma:push": "prisma db push",
+    "docker:build": "docker build -t barberos-backend .",
+    "docker:run": "docker run -p 3000:3000 --env-file .env barberos-backend",
+    "docker:compose": "docker-compose up -d"
   },
   "dependencies": {
     "@nestjs/common": "^10.0.0",
