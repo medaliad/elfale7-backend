@@ -12,6 +12,15 @@ export class CreateUserDto {
   email!: string;
 
   @ApiProperty({
+    description: 'User phone number',
+    example: '+1234567890',
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @ApiProperty({
     description: 'User password',
     example: 'password123',
     minLength: 6,
@@ -24,20 +33,18 @@ export class CreateUserDto {
   @ApiProperty({
     description: 'User first name',
     example: 'John',
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  firstName?: string;
+  @IsNotEmpty()
+  firstName!: string;
 
   @ApiProperty({
     description: 'User last name',
     example: 'Doe',
-    required: false,
   })
   @IsString()
-  @IsOptional()
-  lastName?: string;
+  @IsNotEmpty()
+  lastName!: string;
 
   @ApiProperty({
     description: 'User role',
