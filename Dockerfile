@@ -15,8 +15,8 @@ RUN npm install --legacy-peer-deps
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
+# Generate Prisma client with specific version
+RUN npx prisma@5.22.0 generate
 
 # Build the application
 RUN npm run build
@@ -47,8 +47,8 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 
-# Generate Prisma client in production
-RUN npx prisma generate --schema=./prisma/schema.prisma
+# Generate Prisma client in production with specific version
+RUN npx prisma@5.22.0 generate --schema=./prisma/schema.prisma
 
 # Start app
-CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && node dist/src/main.js
+CMD npx prisma@5.22.0 generate --schema=./prisma/schema.prisma && npx prisma@5.22.0 db push && node dist/src/main.js
