@@ -1,13 +1,13 @@
 FROM node:20-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files and tsconfig
 COPY package*.json ./
+COPY tsconfig*.json ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 # Copy source code
 COPY . .
@@ -15,33 +15,36 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build application
+# Build the application
 RUN npm run build
 
 # Production stage
-FROM node:20-alpine
+FROM node:20-alpine AS production
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json
+# Copy package files and tsconfigs
 COPY package*.json ./
+COPY tsconfig*.json ./
 
-# Install production dependencies only
-RUN npm ci --omit=dev --legacy-peer-deps
+# Install production dependencies and ts-node for seeding
+RUN npm ci --only=production && npm install --no-save ts-node
 
-# Copy Prisma schema
+# Copy Prisma schema and migrations
 COPY prisma ./prisma/
 
-# Copy built application from builder stage
+# Copy built application
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 
-# Expose port
+# Copy templates
+COPY --from=builder /app/src/templates ./src/templates
+
 EXPOSE 3000
 
-# Set environment variables
 ENV NODE_ENV=production
 
-# Run migrations and start application
-CMD npx prisma migrate deploy && npm run start:prod
+# Generate Prisma client in production
+RUN npx prisma generate --schema=./prisma/schema.prisma
+
+# Start app
+CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && NODE_ENV=production npx prisma db seed && node dist/src/main.js
