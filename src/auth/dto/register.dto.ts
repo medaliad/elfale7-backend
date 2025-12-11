@@ -15,7 +15,6 @@ export class RegisterDto {
     example: '+1234567890',
     required: false,
   })
-  @IsPhoneNumber()
   @IsOptional()
   phone?: string;
 
