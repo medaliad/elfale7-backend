@@ -7,7 +7,7 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Install dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 # Copy source code
 COPY . .
@@ -28,7 +28,7 @@ COPY package*.json ./
 COPY tsconfig*.json ./
 
 # Install production dependencies and ts-node for seeding
-RUN npm ci --only=production --legacy-peer-deps && npm install --no-save ts-node
+RUN npm install --only=production --legacy-peer-deps && npm install --no-save ts-node
 
 # Copy Prisma schema and migrations
 COPY prisma ./prisma/
