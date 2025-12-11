@@ -36,8 +36,6 @@ COPY prisma ./prisma/
 # Copy built application
 COPY --from=builder /app/dist ./dist
 
-# Copy templates
-COPY --from=builder /app/src/templates ./src/templates
 
 EXPOSE 3000
 
