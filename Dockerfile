@@ -51,4 +51,4 @@ ENV NODE_ENV=production
 RUN npx prisma generate --schema=./prisma/schema.prisma
 
 # Start app
-CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && NODE_ENV=production npx prisma db seed && node dist/src/main.js
+CMD npx prisma generate --schema=./prisma/schema.prisma && npx prisma db push && npx prisma db seed && node dist/src/main.js
