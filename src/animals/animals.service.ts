@@ -8,12 +8,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { QueryAnimalDto } from './dto/query-animal.dto';
+import { User } from '../common/interfaces/user.interface';
 
 @Injectable()
 export class AnimalsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(createAnimalDto: CreateAnimalDto, user: any) {
+  async create(createAnimalDto: CreateAnimalDto, user: User) {
     try {
       // Get user's default farm or first available farm
       const farm = await this.getUserDefaultFarm(user.id);
@@ -41,7 +42,7 @@ export class AnimalsService {
     }
   }
 
-  async findAll(query: QueryAnimalDto, user: any) {
+  async findAll(query: QueryAnimalDto, user: User) {
     try {
       const { page = 1, limit = 10, type, healthStatus, search } = query;
       const skip = (page - 1) * limit;
@@ -87,7 +88,7 @@ export class AnimalsService {
     }
   }
 
-  async findOne(id: string, user: any) {
+  async findOne(id: string, user: User) {
     try {
       const animal = await this.prisma.animal.findUnique({
         where: { id },
@@ -115,7 +116,7 @@ export class AnimalsService {
     }
   }
 
-  async update(id: string, updateAnimalDto: UpdateAnimalDto, user: any) {
+  async update(id: string, updateAnimalDto: UpdateAnimalDto, user: User) {
     try {
       // Check if animal exists and belongs to the user
       await this.findOne(id, user);
@@ -137,7 +138,7 @@ export class AnimalsService {
     }
   }
 
-  async remove(id: string, user: any) {
+  async remove(id: string, user: User) {
     try {
       // Check if animal exists and belongs to the user
       await this.findOne(id, user);
