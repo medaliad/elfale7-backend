@@ -8,7 +8,7 @@ export class OnboardingDto {
   })
   @IsNotEmpty()
   @IsString()
-  farmName: string;
+  farmName!: string;
 
   @ApiProperty({
     description: 'Location of the farm',

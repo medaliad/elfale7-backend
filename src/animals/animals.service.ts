@@ -30,11 +30,12 @@ export class AnimalsService {
           farm: true,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to create animal: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to create animal: ${errorMessage}`);
     }
   }
 
@@ -73,8 +74,9 @@ export class AnimalsService {
           totalPages: Math.ceil(total / Number(limit)),
         },
       };
-    } catch (error) {
-      throw new BadRequestException(`Failed to fetch animals: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to fetch animals: ${errorMessage}`);
     }
   }
 
@@ -92,11 +94,12 @@ export class AnimalsService {
       }
 
       return animal;
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to fetch animal: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to fetch animal: ${errorMessage}`);
     }
   }
 
@@ -124,11 +127,12 @@ export class AnimalsService {
           farm: true,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NotFoundException || error instanceof BadRequestException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to update animal: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to update animal: ${errorMessage}`);
     }
   }
 
@@ -143,11 +147,12 @@ export class AnimalsService {
       });
 
       return { message: 'Animal deleted successfully' };
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof NotFoundException) {
         throw error;
       }
-      throw new BadRequestException(`Failed to delete animal: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to delete animal: ${errorMessage}`);
     }
   }
 }
