@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { OnboardingDto } from './dto/onboarding.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '@prisma/client';
 
@@ -194,5 +195,42 @@ export class AuthService {
   async hashData(data: string) {
     const salt = await bcrypt.genSalt(10);
     return bcrypt.hash(data, salt);
+  }
+
+  async completeOnboarding(userId: string, onboardingDto: OnboardingDto) {
+    // Check if user exists
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { farms: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException(`User with ID ${userId} not found`);
+    }
+
+    // Check if user already has a farm
+    if (user.farms.length > 0) {
+      throw new BadRequestException('User already has a farm');
+    }
+
+    // Create farm for the user
+    const farm = await this.prisma.farm.create({
+      data: {
+        name: onboardingDto.farmName,
+        location: onboardingDto.farmLocation,
+        description: onboardingDto.farmDescription,
+        userId: userId,
+      },
+    });
+
+    return {
+      message: 'Onboarding completed successfully',
+      farm: {
+        id: farm.id,
+        name: farm.name,
+        location: farm.location,
+        description: farm.description,
+      },
+    };
   }
 }

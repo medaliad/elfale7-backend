@@ -1,0 +1,35 @@
+### Register a new user
+POST http://localhost:3000/auth/register
+Content-Type: application/json
+
+{
+  "email": "farmer@example.com",
+  "password": "password123",
+  "firstName": "John",
+  "lastName": "Farmer",
+  "phone": "+12345678900"
+}
+
+### Login to get access token
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{
+  "email": "farmer@example.com",
+  "password": "password123"
+}
+
+### Complete onboarding with farm setup
+POST http://localhost:3000/auth/onboarding
+Content-Type: application/json
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE
+
+{
+  "farmName": "Green Valley Farm",
+  "farmLocation": "Countryside, State",
+  "farmDescription": "A small family-owned farm with sheep and goats"
+}
+
+### Get user's farms to verify onboarding
+GET http://localhost:3000/farms/my-farms
+Authorization: Bearer YOUR_ACCESS_TOKEN_HERE

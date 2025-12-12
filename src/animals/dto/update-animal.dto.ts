@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsDate, IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsDate, IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { AnimalType, HealthStatus } from '@prisma/client';
 import { Type } from 'class-transformer';
 
@@ -51,4 +51,13 @@ export class UpdateAnimalDto {
   @IsEnum(HealthStatus)
   @IsOptional()
   healthStatus?: HealthStatus;
+
+  @ApiProperty({
+    description: 'Farm ID',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+    required: false,
+  })
+  @IsUUID()
+  @IsOptional()
+  farmId?: string;
 }

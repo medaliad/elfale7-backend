@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
+import { OnboardingDto } from './dto/onboarding.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -97,5 +98,25 @@ export class AuthController {
   })
   logout(@CurrentUser() user: { id: string }) {
     return this.authService.logout(user.id);
+  }
+
+  @Post('onboarding')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Complete user onboarding with farm setup' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Onboarding completed successfully',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: 'User already has a farm',
+  })
+  onboarding(
+    @Body() onboardingDto: OnboardingDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.authService.completeOnboarding(user.id, onboardingDto);
   }
 }

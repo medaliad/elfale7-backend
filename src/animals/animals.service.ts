@@ -13,86 +13,141 @@ export class AnimalsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(createAnimalDto: CreateAnimalDto) {
-    // Check if farm exists
-    const farm = await this.prisma.farm.findUnique({
-      where: { id: createAnimalDto.farmId },
-    });
+    try {
+      // Check if farm exists
+      const farm = await this.prisma.farm.findUnique({
+        where: { id: createAnimalDto.farmId },
+      });
 
-    if (!farm) {
-      throw new BadRequestException(`Farm with ID ${createAnimalDto.farmId} not found`);
+      if (!farm) {
+        throw new BadRequestException(`Farm with ID ${createAnimalDto.farmId} not found`);
+      }
+
+      // Create animal
+      return await this.prisma.animal.create({
+        data: createAnimalDto,
+        include: {
+          farm: true,
+        },
+      });
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to create animal: ${error.message}`);
     }
-
-    // Create animal
-    return this.prisma.animal.create({
-      data: createAnimalDto,
-    });
   }
 
   async findAll(query: QueryAnimalDto) {
-    const { page = 1, limit = 10, type, healthStatus, farmId, search } = query;
-    const skip = (page - 1) * limit;
+    try {
+      const { page = 1, limit = 10, type, healthStatus, farmId, search } = query;
+      const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {};
-    if (type) where.type = type;
-    if (healthStatus) where.healthStatus = healthStatus;
-    if (farmId) where.farmId = farmId;
-    if (search) where.name = { contains: search, mode: 'insensitive' };
+      // Build where clause
+      const where: any = {};
+      if (type) where.type = type;
+      if (healthStatus) where.healthStatus = healthStatus;
+      if (farmId) where.farmId = farmId;
+      if (search) where.name = { contains: search, mode: 'insensitive' };
 
-    // Get total count
-    const total = await this.prisma.animal.count({ where });
+      // Get total count
+      const total = await this.prisma.animal.count({ where });
 
-    // Get animals
-    const animals = await this.prisma.animal.findMany({
-      where,
-      skip,
-      take: limit,
-      orderBy: { createdAt: 'desc' },
-    });
+      // Get animals with farm data
+      const animals = await this.prisma.animal.findMany({
+        where,
+        skip,
+        take: Number(limit),
+        orderBy: { createdAt: 'desc' },
+        include: {
+          farm: true,
+        },
+      });
 
-    return {
-      data: animals,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
-    };
+      return {
+        data: animals,
+        meta: {
+          total,
+          page: Number(page),
+          limit: Number(limit),
+          totalPages: Math.ceil(total / Number(limit)),
+        },
+      };
+    } catch (error) {
+      throw new BadRequestException(`Failed to fetch animals: ${error.message}`);
+    }
   }
 
   async findOne(id: string) {
-    const animal = await this.prisma.animal.findUnique({
-      where: { id },
-    });
+    try {
+      const animal = await this.prisma.animal.findUnique({
+        where: { id },
+        include: {
+          farm: true,
+        },
+      });
 
-    if (!animal) {
-      throw new NotFoundException(`Animal with ID ${id} not found`);
+      if (!animal) {
+        throw new NotFoundException(`Animal with ID ${id} not found`);
+      }
+
+      return animal;
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to fetch animal: ${error.message}`);
     }
-
-    return animal;
   }
 
   async update(id: string, updateAnimalDto: UpdateAnimalDto) {
-    // Check if animal exists
-    await this.findOne(id);
+    try {
+      // Check if animal exists
+      await this.findOne(id);
 
-    // Update animal
-    return this.prisma.animal.update({
-      where: { id },
-      data: updateAnimalDto,
-    });
+      // If farmId is provided, check if farm exists
+      if ('farmId' in updateAnimalDto) {
+        const farm = await this.prisma.farm.findUnique({
+          where: { id: updateAnimalDto.farmId },
+        });
+
+        if (!farm) {
+          throw new BadRequestException(`Farm with ID ${updateAnimalDto.farmId} not found`);
+        }
+      }
+
+      // Update animal
+      return await this.prisma.animal.update({
+        where: { id },
+        data: updateAnimalDto,
+        include: {
+          farm: true,
+        },
+      });
+    } catch (error) {
+      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to update animal: ${error.message}`);
+    }
   }
 
   async remove(id: string) {
-    // Check if animal exists
-    await this.findOne(id);
+    try {
+      // Check if animal exists
+      await this.findOne(id);
 
-    // Delete animal
-    await this.prisma.animal.delete({
-      where: { id },
-    });
+      // Delete animal
+      await this.prisma.animal.delete({
+        where: { id },
+      });
 
-    return { message: 'Animal deleted successfully' };
+      return { message: 'Animal deleted successfully' };
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(`Failed to delete animal: ${error.message}`);
+    }
   }
 }
