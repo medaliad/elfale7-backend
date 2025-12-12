@@ -18,6 +18,7 @@ model User {
   firstName     String
   lastName      String
   role          Role           @default(USER)
+  isOnboarding  Boolean        @default(true)
   refreshTokens RefreshToken[]
   farms         Farm[]
   createdAt     DateTime       @default(now())

@@ -86,12 +86,13 @@ export class AuthService {
         firstName: registerDto.firstName,
         lastName: registerDto.lastName,
         role: Role.USER,
+        isOnboarding: registerDto.isOnboarding ?? true,
       },
     });
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
-    return tokens;
+    return { tokens, user };
   }
 
   async refreshTokens(userId: string, refreshToken: string) {
@@ -197,6 +198,30 @@ export class AuthService {
     return bcrypt.hash(data, salt);
   }
 
+  async getOnboardingStatus(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        isOnboarding: true,
+        farms: {
+          select: {
+            id: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException(`User with ID ${userId} not found`);
+    }
+
+    return {
+      isOnboarding: user.isOnboarding,
+      hasFarm: user.farms.length > 0,
+    };
+  }
+
   async completeOnboarding(userId: string, onboardingDto: OnboardingDto) {
     // Check if user exists
     const user = await this.prisma.user.findUnique({
@@ -213,7 +238,7 @@ export class AuthService {
       throw new BadRequestException('User already has a farm');
     }
 
-    // Create farm for the user
+    // Create farm for the user and update onboarding status
     const farm = await this.prisma.farm.create({
       data: {
         name: onboardingDto.farmName,
@@ -221,6 +246,12 @@ export class AuthService {
         description: onboardingDto.farmDescription,
         userId: userId,
       },
+    });
+    
+    // Update user's onboarding status
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isOnboarding: false },
     });
 
     return {
@@ -231,6 +262,7 @@ export class AuthService {
         location: farm.location,
         description: farm.description,
       },
+      isOnboarding: false,
     };
   }
 }

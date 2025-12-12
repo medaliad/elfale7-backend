@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -17,6 +18,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { RegisterDto } from './dto/register.dto';
 import { OnboardingDto } from './dto/onboarding.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -45,6 +47,7 @@ export class AuthController {
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'User has been successfully logged in',
+    type: LoginResponseDto,
   })
   @ApiResponse({
     status: HttpStatus.UNAUTHORIZED,
@@ -118,5 +121,18 @@ export class AuthController {
     @CurrentUser() user: { id: string },
   ) {
     return this.authService.completeOnboarding(user.id, onboardingDto);
+  }
+
+  @Get('onboarding-status')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({ summary: 'Get user onboarding status' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'User onboarding status retrieved successfully',
+  })
+  getOnboardingStatus(@CurrentUser() user: { id: string }) {
+    return this.authService.getOnboardingStatus(user.id);
   }
 }
