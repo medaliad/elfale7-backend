@@ -42,14 +42,6 @@ export class QueryAnimalDto {
   @IsOptional()
   healthStatus?: HealthStatus;
 
-  @ApiProperty({
-    description: 'Farm ID filter',
-    example: '123e4567-e89b-12d3-a456-426614174000',
-    required: false,
-  })
-  @IsUUID()
-  @IsOptional()
-  farmId?: string;
 
   @ApiProperty({
     description: 'Search by name',

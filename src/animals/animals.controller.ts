@@ -9,6 +9,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 import {
   ApiBearerAuth,
   ApiOperation,
@@ -40,8 +41,8 @@ export class AnimalsController {
     status: 400,
     description: 'Farm not found',
   })
-  create(@Body() createAnimalDto: CreateAnimalDto) {
-    return this.animalsService.create(createAnimalDto);
+  create(@Body() createAnimalDto: CreateAnimalDto, @CurrentUser() user) {
+    return this.animalsService.create(createAnimalDto, user);
   }
 
   @Get()
@@ -52,8 +53,8 @@ export class AnimalsController {
     type: AnimalResponseDto,
     isArray: true,
   })
-  findAll(@Query() query: QueryAnimalDto) {
-    return this.animalsService.findAll(query);
+  findAll(@Query() query: QueryAnimalDto, @CurrentUser() user) {
+    return this.animalsService.findAll(query, user);
   }
 
   @Get(':id')
@@ -67,8 +68,8 @@ export class AnimalsController {
     status: 404,
     description: 'Animal not found',
   })
-  findOne(@Param('id') id: string) {
-    return this.animalsService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user) {
+    return this.animalsService.findOne(id, user);
   }
 
   @Patch(':id')
@@ -82,8 +83,8 @@ export class AnimalsController {
     status: 404,
     description: 'Animal not found',
   })
-  update(@Param('id') id: string, @Body() updateAnimalDto: UpdateAnimalDto) {
-    return this.animalsService.update(id, updateAnimalDto);
+  update(@Param('id') id: string, @Body() updateAnimalDto: UpdateAnimalDto, @CurrentUser() user) {
+    return this.animalsService.update(id, updateAnimalDto, user);
   }
 
   @Delete(':id')
@@ -96,7 +97,7 @@ export class AnimalsController {
     status: 404,
     description: 'Animal not found',
   })
-  remove(@Param('id') id: string) {
-    return this.animalsService.remove(id);
+  remove(@Param('id') id: string, @CurrentUser() user) {
+    return this.animalsService.remove(id, user);
   }
 }
