@@ -38,15 +38,16 @@ model RefreshToken {
 }
 
 model Farm {
-  id          String   @id @default(uuid())
+  id          String      @id @default(uuid())
   name        String
   location    String?
   description String?
   userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   animals     Animal[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  foodStocks  FoodStock[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([userId])
 }
@@ -60,8 +61,51 @@ model Animal {
   healthStatus HealthStatus @default(HEALTHY)
   farmId       String
   farm         Farm         @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  vaccines     Vaccine[]
+  breedings    Breeding[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+
+  @@index([farmId])
+}
+
+model Vaccine {
+  id          String   @id @default(uuid())
+  name        String
+  date        DateTime
+  description String?
+  animalId    String
+  animal      Animal   @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([animalId])
+}
+
+model Breeding {
+  id              String        @id @default(uuid())
+  date            DateTime
+  method          BreedingMethod
+  notes           String?
+  animalId        String
+  animal          Animal        @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  partnerAnimalId String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([animalId])
+}
+
+model FoodStock {
+  id          String   @id @default(uuid())
+  name        String
+  quantity    Float
+  unit        String
+  farmId      String
+  farm        Farm     @relation(fields: [farmId], references: [id], onDelete: Cascade)
+  expiryDate  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([farmId])
 }
@@ -81,4 +125,9 @@ enum HealthStatus {
   HEALTHY
   SICK
   UNDER_TREATMENT
+}
+
+enum BreedingMethod {
+  NATURAL
+  ARTIFICIAL_INSEMINATION
 }

@@ -13,6 +13,14 @@ export class CreateAnimalDto {
   name!: string;
 
   @ApiProperty({
+    description: 'Farm ID that this animal belongs to',
+    example: '123e4567-e89b-12d3-a456-426614174000',
+  })
+  @IsUUID()
+  @IsNotEmpty()
+  farmId!: string;
+
+  @ApiProperty({
     description: 'Animal type',
     enum: AnimalType,
     example: AnimalType.SHEEP,

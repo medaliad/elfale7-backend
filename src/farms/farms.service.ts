@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
 import { UpdateFarmDto } from './dto/update-farm.dto';
+import { CreateFoodStockDto } from './dto/create-food-stock.dto';
 
 @Injectable()
 export class FarmsService {
@@ -96,5 +98,96 @@ export class FarmsService {
     });
 
     return { message: 'Farm deleted successfully' };
+  }
+
+  // Food Stock methods
+  async addFoodStock(farmId: string, createFoodStockDto: CreateFoodStockDto, userId: string) {
+    try {
+      // Check if farm exists
+      const farm = await this.findOne(farmId);
+
+      // Check if farm belongs to the user
+      if (farm.userId !== userId) {
+        throw new ForbiddenException(`You don't have access to this farm`);
+      }
+
+      // Create food stock record
+      return await this.prisma.foodStock.create({
+        data: {
+          ...createFoodStockDto,
+          farmId,
+        },
+        include: {
+          farm: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to add food stock record: ${errorMessage}`);
+    }
+  }
+
+  async findAllFoodStocks(farmId: string, userId: string) {
+    try {
+      // Check if farm exists
+      const farm = await this.findOne(farmId);
+
+      // Check if farm belongs to the user
+      if (farm.userId !== userId) {
+        throw new ForbiddenException(`You don't have access to this farm`);
+      }
+
+      // Get all food stock records for the farm
+      return await this.prisma.foodStock.findMany({
+        where: { farmId },
+        orderBy: { createdAt: 'desc' },
+        include: {
+          farm: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to fetch food stock records: ${errorMessage}`);
+    }
+  }
+
+  async removeFoodStock(id: string, userId: string) {
+    try {
+      // Check if food stock exists
+      const foodStock = await this.prisma.foodStock.findUnique({
+        where: { id },
+        include: {
+          farm: true,
+        },
+      });
+
+      if (!foodStock) {
+        throw new NotFoundException(`Food stock record with ID ${id} not found`);
+      }
+
+      // Check if farm belongs to the user
+      if (foodStock.farm.userId !== userId) {
+        throw new ForbiddenException(`You don't have access to this food stock record`);
+      }
+
+      // Delete food stock record
+      await this.prisma.foodStock.delete({
+        where: { id },
+      });
+
+      return { message: 'Food stock record deleted successfully' };
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to delete food stock record: ${errorMessage}`);
+    }
   }
 }

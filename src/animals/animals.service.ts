@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAnimalDto } from './dto/create-animal.dto';
 import { UpdateAnimalDto } from './dto/update-animal.dto';
 import { QueryAnimalDto } from './dto/query-animal.dto';
+import { CreateVaccineDto } from './dto/create-vaccine.dto';
+import { CreateBreedingDto } from './dto/create-breeding.dto';
 import { User } from '../common/interfaces/user.interface';
 
 @Injectable()
@@ -165,5 +167,104 @@ export class AnimalsService {
       where: { userId },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  // Vaccine methods
+  async addVaccine(animalId: string, createVaccineDto: CreateVaccineDto, user: User) {
+    try {
+      // Check if animal exists and belongs to the user
+      await this.findOne(animalId, user);
+
+      // Create vaccine record
+      return await this.prisma.vaccine.create({
+        data: {
+          ...createVaccineDto,
+          animalId,
+        },
+        include: {
+          animal: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to add vaccine record: ${errorMessage}`);
+    }
+  }
+
+  async findAllVaccines(animalId: string, user: User) {
+    try {
+      // Check if animal exists and belongs to the user
+      await this.findOne(animalId, user);
+
+      // Get all vaccine records for the animal
+      return await this.prisma.vaccine.findMany({
+        where: { animalId },
+        orderBy: { date: 'desc' },
+        include: {
+          animal: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to fetch vaccine records: ${errorMessage}`);
+    }
+  }
+
+  // Breeding methods
+  async addBreeding(animalId: string, createBreedingDto: CreateBreedingDto, user: User) {
+    try {
+      // Check if animal exists and belongs to the user
+      await this.findOne(animalId, user);
+
+      // If partnerAnimalId is provided, check if it exists and belongs to the user
+      if (createBreedingDto.partnerAnimalId) {
+        await this.findOne(createBreedingDto.partnerAnimalId, user);
+      }
+
+      // Create breeding record
+      return await this.prisma.breeding.create({
+        data: {
+          ...createBreedingDto,
+          animalId,
+        },
+        include: {
+          animal: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to add breeding record: ${errorMessage}`);
+    }
+  }
+
+  async findAllBreedings(animalId: string, user: User) {
+    try {
+      // Check if animal exists and belongs to the user
+      await this.findOne(animalId, user);
+
+      // Get all breeding records for the animal
+      return await this.prisma.breeding.findMany({
+        where: { animalId },
+        orderBy: { date: 'desc' },
+        include: {
+          animal: true,
+        },
+      });
+    } catch (error: unknown) {
+      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+        throw error;
+      }
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new BadRequestException(`Failed to fetch breeding records: ${errorMessage}`);
+    }
   }
 }

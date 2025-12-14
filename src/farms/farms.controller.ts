@@ -20,6 +20,8 @@ import { FarmsService } from './farms.service';
 import { CreateFarmDto } from './dto/create-farm.dto';
 import { UpdateFarmDto } from './dto/update-farm.dto';
 import { FarmResponseDto } from './dto/farm-response.dto';
+import { CreateFoodStockDto } from './dto/create-food-stock.dto';
+import { FoodStockResponseDto } from './dto/food-stock-response.dto';
 
 @ApiTags('farms')
 @Controller('farms')
@@ -111,5 +113,61 @@ export class FarmsController {
   })
   remove(@Param('id') id: string) {
     return this.farmsService.remove(id);
+  }
+
+  // Food Stock endpoints
+  @Post(':id/food-stocks')
+  @ApiOperation({ summary: 'Add a food stock record for a farm' })
+  @ApiResponse({
+    status: 201,
+    description: 'Food stock record has been successfully created',
+    type: FoodStockResponseDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Farm not found',
+  })
+  addFoodStock(
+    @Param('id') id: string,
+    @Body() createFoodStockDto: CreateFoodStockDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.farmsService.addFoodStock(id, createFoodStockDto, user.id);
+  }
+
+  @Get(':id/food-stocks')
+  @ApiOperation({ summary: 'Get all food stock records for a farm' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return all food stock records for the farm',
+    type: FoodStockResponseDto,
+    isArray: true,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Farm not found',
+  })
+  findAllFoodStocks(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.farmsService.findAllFoodStocks(id, user.id);
+  }
+
+  @Delete('food-stocks/:id')
+  @ApiOperation({ summary: 'Delete a food stock record' })
+  @ApiResponse({
+    status: 200,
+    description: 'Food stock record has been successfully deleted',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Food stock record not found',
+  })
+  removeFoodStock(
+    @Param('id') id: string,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.farmsService.removeFoodStock(id, user.id);
   }
 }
